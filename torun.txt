@@ -1,0 +1,1 @@
+python betista_scraper.py --limit 0 --workers 10 --output output.json
