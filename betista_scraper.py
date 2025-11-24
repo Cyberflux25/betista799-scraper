@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import concurrent.futures as cf
@@ -15,6 +16,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException, JavascriptException, TimeoutException, NoSuchElementException
+
+DEFAULT_OUTPUT_DIR = Path(os.environ.get("BANGERSURE_OUTPUT_DIR", r"C:\xampp\htdocs\bangersure.com\data"))
 
 # Silence known harmless UC __del__ warnings on Windows
 try:
@@ -51,10 +54,10 @@ DEFAULT_SPORT_MENU_QUERY = (
 
 
 class BetistaScraper:
-	def __init__(self, headless: bool = True, timeout_sec: int = 30) -> None:
+	def __init__(self, headless: bool = True, timeout_sec: int = 60) -> None:
 		self.headless = headless
 		self.timeout_sec = timeout_sec
-		print(f"🚀 Launching Chrome (headless={self.headless})...", flush=True)
+		print(f"🚀 Launching Chrome (headless={self.headless}, timeout={self.timeout_sec}s)...", flush=True)
 		self.driver = self._init_driver()
 		self.session = requests.Session()
 		self.session.headers.update({
@@ -80,14 +83,26 @@ class BetistaScraper:
 		driver.set_page_load_timeout(self.timeout_sec)
 		return driver
 
+	@retry(
+		stop=stop_after_attempt(3),
+		wait=wait_exponential(multiplier=1, min=2, max=8),
+		retry=retry_if_exception_type((TimeoutException, WebDriverException)),
+		reraise=True,
+	)
 	def ensure_origin(self) -> None:
 		print("🌐 Opening homepage…", flush=True)
-		self.driver.get(BETISTA_HOME_URL)
-		# Wait for body presence to ensure page fully initialised
-		WebDriverWait(self.driver, self.timeout_sec).until(
-			EC.presence_of_element_located((By.TAG_NAME, "body"))
-		)
-		print("✅ Homepage loaded.", flush=True)
+		try:
+			self.driver.get(BETISTA_HOME_URL)
+			# Wait for body presence to ensure page fully initialised
+			WebDriverWait(self.driver, self.timeout_sec).until(
+				EC.presence_of_element_located((By.TAG_NAME, "body"))
+			)
+			print("✅ Homepage loaded.", flush=True)
+		except TimeoutException as e:
+			print(f"⚠️ Timeout ao carregar página. Tentando novamente...", flush=True)
+			# Força refresh antes de tentar novamente
+			self.driver.refresh()
+			raise
 
 	@retry(
 		stop=stop_after_attempt(3),
@@ -252,9 +267,12 @@ def safe_get_team_ids(event_details: Dict[str, Any]) -> Tuple[Optional[int], Opt
 
 
 def extract_moneyline(event_details: Dict[str, Any], odd_map: Dict[int, Dict[str, Any]]) -> Optional[Dict[str, Optional[float]]]:
-	# Market typeId 1 is 1x2 (ML)
+	# Market typeId 1 is 1x2 (ML) - APENAS mercado principal
 	for market in event_details.get("markets", []):
-		if market.get("typeId") == 1:
+		# Garante que é o mercado 1X2 principal (typeId 1) e não Double Chance (typeId pode ser diferente)
+		market_type_id = market.get("typeId")
+		market_name = str(market.get("name", "")).lower()
+		if market_type_id == 1 and 'double' not in market_name and 'dupla' not in market_name:
 			groups: List[List[int]] = market.get("desktopOddIds") or market.get("mobileOddIds") or []
 			# Some implementations put all three in the first group
 			candidates: List[int] = []
@@ -326,29 +344,115 @@ def extract_moneyline(event_details: Dict[str, Any], odd_map: Dict[int, Dict[str
 
 def extract_totals(event_details: Dict[str, Any]) -> List[Dict[str, Any]]:
 	# Odds typeId: 12 (Mais de / Over), 13 (Menos de / Under)
+	# PRIORIDADE: Usa a linha de cada odd individual (sv/sn) em vez da linha do market
+	# Isso garante que odds de linhas diferentes não são agrupadas incorretamente
+	odd_map = {odd.get("id"): odd for odd in event_details.get("odds", [])}
 	totals_by_line: Dict[str, Dict[str, Any]] = {}
+	
+	# Processa TODAS as odds de Totals diretamente, agrupando por linha individual
 	for odd in event_details.get("odds", []):
 		ot = odd.get("typeId")
 		if ot not in (12, 13):
 			continue
-		line = str(odd.get("sv") or odd.get("sn") or "").strip()
+		
+		# PRIORIDADE 1: Extrai linha do campo sv (valor específico) - mais confiável
+		line = None
+		if odd.get("sv"):
+			line = str(odd.get("sv")).strip()
+		# PRIORIDADE 2: Extrai linha do campo sn (nome/valor)
+		elif odd.get("sn"):
+			line = str(odd.get("sn")).strip()
+		# PRIORIDADE 3: Tenta extrair do nome da odd
+		elif odd.get("name"):
+			import re
+			name = str(odd.get("name", ""))
+			# Procura padrões como "5.5", "5,5", "5", "Mais de 5.5", etc.
+			match = re.search(r'(\d+[.,]?\d*)', name)
+			if match:
+				line = match.group(1).replace(",", ".")
+		
 		if not line:
 			continue
-		rec = totals_by_line.setdefault(line, {"line": line, "over": None, "under": None})
+		
+		# Normaliza a linha (remove espaços, converte vírgula para ponto, remove +)
+		line = line.replace(",", ".").replace(" ", "").replace("+", "").strip()
+		
+		# Ignora linhas que não são números válidos (ex: "0.5|1|15|JUV")
+		try:
+			float(line)
+		except ValueError:
+			continue
+		
+		# Cria entrada para esta linha se não existir
+		if line not in totals_by_line:
+			totals_by_line[line] = {"line": line, "over": None, "under": None}
+		
+		rec = totals_by_line[line]
 		price = odd.get("price")
 		if price is None:
 			continue
+		
 		name = str(odd.get("name", "")).lower()
-		if ot == 12 or "mais de" in name or "over" in name:
+		
+		# Identifica Over ou Under baseado no typeId e nome
+		is_over = (ot == 12) or "mais de" in name or "over" in name or "acima" in name
+		is_under = (ot == 13) or "menos de" in name or "under" in name or "abaixo" in name
+		
+		# Só atualiza se ainda não foi definido (evita sobrescrever odds corretas)
+		# Se já existe, mantém a primeira (assumindo que é a mais recente/correta)
+		if is_over and rec["over"] is None:
 			rec["over"] = float(price)
-		elif ot == 13 or "menos de" in name or "under" in name:
+		elif is_under and rec["under"] is None:
 			rec["under"] = float(price)
+	
+	# Fallback: Se não encontrou nada, tenta através dos markets
+	if not totals_by_line:
+		for odd in event_details.get("odds", []):
+			ot = odd.get("typeId")
+			if ot not in (12, 13):
+				continue
+			
+			line = None
+			if odd.get("sv"):
+				line = str(odd.get("sv")).strip()
+			elif odd.get("sn"):
+				line = str(odd.get("sn")).strip()
+			elif odd.get("name"):
+				import re
+				name = str(odd.get("name", ""))
+				match = re.search(r'(\d+[.,]?\d*)', name)
+				if match:
+					line = match.group(1).replace(",", ".")
+			
+			if not line:
+				continue
+			
+			line = line.replace(",", ".").replace(" ", "").replace("+", "")
+			
+			if line not in totals_by_line:
+				totals_by_line[line] = {"line": line, "over": None, "under": None}
+			
+			rec = totals_by_line[line]
+			price = odd.get("price")
+			if price is None:
+				continue
+			
+			name = str(odd.get("name", "")).lower()
+			is_over = (ot == 12) or "mais de" in name or "over" in name
+			is_under = (ot == 13) or "menos de" in name or "under" in name
+			
+			if is_over and rec["over"] is None:
+				rec["over"] = float(price)
+			elif is_under and rec["under"] is None:
+				rec["under"] = float(price)
+	
 	# Return sorted by numeric line when possible
 	def parse_line(v: str) -> float:
 		try:
-			return float(v.replace("+", ""))
+			return float(v.replace("+", "").replace(",", "."))
 		except Exception:
 			return float("inf")
+	
 	return sorted(totals_by_line.values(), key=lambda r: parse_line(str(r["line"])))
 
 
@@ -474,9 +578,12 @@ def run(headless: bool, limit: int, output_path: str, template_path: Optional[st
 			print(f"📅 cat {cid}: {len(dates)} date buckets, 🎫 {len(found_ids)} ids, ➕ {added} new.", flush=True)
 
 		print(f"🎟️ Total unique event IDs: {len(all_event_ids)}", flush=True)
+		# Sem limite - processa TODOS os eventos disponíveis
 		if limit > 0:
 			all_event_ids = all_event_ids[:limit]
 			print(f"✂️ Limiting to first {len(all_event_ids)} events.", flush=True)
+		else:
+			print(f"✅ Processando TODOS os {len(all_event_ids)} eventos (sem limite).", flush=True)
 		results: List[Dict[str, Any]] = []
 
 		def fetch_and_parse(eid: int) -> Optional[Dict[str, Any]]:
@@ -510,6 +617,12 @@ def run(headless: bool, limit: int, output_path: str, template_path: Optional[st
 			"events": results,
 		}
 		output_obj = maybe_conform_to_template(output_obj, template_path)
+		
+		# Usa o diretório padrão se output_path não for absoluto
+		if not os.path.isabs(output_path):
+			DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+			output_path = str(DEFAULT_OUTPUT_DIR / "betista799_output_data.json")
+		
 		with open(output_path, "w", encoding="utf-8") as f:
 			json.dump(output_obj, f, ensure_ascii=False, indent=2)
 		elapsed = time.time() - t0
@@ -522,8 +635,8 @@ def run(headless: bool, limit: int, output_path: str, template_path: Optional[st
 def parse_args(argv: List[str]) -> argparse.Namespace:
 	parser = argparse.ArgumentParser(description="Scrape next soccer matches odds from betista799 using Selenium + undetected_chromedriver.")
 	parser.add_argument("--no-headless", action="store_true", help="Run the browser in non-headless mode.")
-	parser.add_argument("--limit", type=int, default=50, help="Maximum number of events to fetch (0 = no limit).")
-	parser.add_argument("--output", type=str, default="output.json", help="Path to write the output JSON.")
+	parser.add_argument("--limit", type=int, default=0, help="Maximum number of events to fetch (default: 0 = sem limite, coleta TODOS).")
+	parser.add_argument("--output", type=str, default=None, help="Path to write the output JSON (default: betista799_output_data.json in BANGERSURE_OUTPUT_DIR).")
 	parser.add_argument("--template", type=str, default=None, help="Path to @outputExample.json to mirror top-level shape if needed.")
 	parser.add_argument("--workers", type=int, default=6, help="Number of parallel workers for event details (1-16).")
 	return parser.parse_args(argv)
@@ -531,6 +644,10 @@ def parse_args(argv: List[str]) -> argparse.Namespace:
 
 if __name__ == "__main__":
 	args = parse_args(sys.argv[1:])
+	# Se não foi especificado output, usa o padrão
+	if args.output is None:
+		DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+		args.output = str(DEFAULT_OUTPUT_DIR / "betista799_output_data.json")
 	run(
 		headless=not args.no_headless,
 		limit=args.limit,
