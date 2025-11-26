@@ -17,7 +17,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import WebDriverException, JavascriptException, TimeoutException, NoSuchElementException
 
-DEFAULT_OUTPUT_DIR = Path(os.environ.get("BANGERSURE_OUTPUT_DIR", r"C:\xampp\htdocs\bangersure.com\data"))
+DEFAULT_OUTPUT_DIR = Path(os.environ.get("BANGERSURE_OUTPUT_DIR", r"C:\xampp\htdocs\bangersure.com\bangersure-App\data"))
 
 # Silence known harmless UC __del__ warnings on Windows
 try:
@@ -67,6 +67,11 @@ class BetistaScraper:
 		})
 
 	def _init_driver(self):
+		# Criar pasta driver se não existir
+		driver_dir = Path(__file__).parent / "driver"
+		driver_dir.mkdir(exist_ok=True)
+		driver_path = driver_dir / "chromedriver.exe"
+		
 		options = Options()
 		if self.headless:
 			# Use new headless mode
@@ -79,7 +84,24 @@ class BetistaScraper:
 		# Use generally safe flags only
 		options.add_argument("--disable-blink-features=AutomationControlled")
 
-		driver = uc.Chrome(options=options)
+		# Usa ChromeDriver local se existir
+		if driver_path.exists():
+			print(f"   ✅ Usando ChromeDriver local: {driver_path}", flush=True)
+			driver = uc.Chrome(
+				options=options,
+				driver_executable_path=str(driver_path),
+				use_subprocess=True,
+				version_main=None
+			)
+		else:
+			print(f"   ⚠️  ChromeDriver não encontrado em {driver_path}", flush=True)
+			print(f"   📥 Baixando ChromeDriver...", flush=True)
+			driver = uc.Chrome(
+				options=options,
+				use_subprocess=True,
+				version_main=None
+			)
+		
 		driver.set_page_load_timeout(self.timeout_sec)
 		return driver
 
@@ -648,11 +670,34 @@ if __name__ == "__main__":
 	if args.output is None:
 		DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 		args.output = str(DEFAULT_OUTPUT_DIR / "betista799_output_data.json")
-	run(
-		headless=not args.no_headless,
-		limit=args.limit,
-		output_path=args.output,
-		template_path=args.template,
-		workers=args.workers,
-	)
+	
+	loop_count = 0
+	while True:
+		loop_count += 1
+		print(f"\n{'='*80}")
+		print(f"🔄 BETISTA799 SCRAPER - Execução #{loop_count}")
+		print(f"{'='*80}\n")
+		
+		try:
+			run(
+				headless=not args.no_headless,
+				limit=args.limit,
+				output_path=args.output,
+				template_path=args.template,
+				workers=args.workers,
+			)
+			print(f"\n✅ Execução #{loop_count} concluída com sucesso!")
+		except KeyboardInterrupt:
+			print("\n\n⚠️  Interrompido pelo usuário. Encerrando...")
+			sys.exit(0)
+		except Exception as e:
+			print(f"❌ Erro na execução #{loop_count}: {e}")
+			print("⏳ Aguardando 30 segundos antes de tentar novamente...")
+			time.sleep(30)
+		
+		# Aguarda antes de reiniciar
+		wait_time = 60  # 60 segundos entre execuções
+		print(f"\n⏸️  Aguardando {wait_time} segundos antes da próxima execução...")
+		print(f"   (Pressione Ctrl+C para encerrar)\n")
+		time.sleep(wait_time)
 
