@@ -366,15 +366,50 @@ def extract_moneyline(event_details: Dict[str, Any], odd_map: Dict[int, Dict[str
 
 def extract_totals(event_details: Dict[str, Any]) -> List[Dict[str, Any]]:
 	# Odds typeId: 12 (Mais de / Over), 13 (Menos de / Under)
-	# PRIORIDADE: Usa a linha de cada odd individual (sv/sn) em vez da linha do market
-	# Isso garante que odds de linhas diferentes não são agrupadas incorretamente
+	# FILTRO: Busca o market pelo ID 7052003 e extrai todas as odds desse market
+	
+	# Busca o market específico pelo ID 7052003
+	target_market = None
+	for market in event_details.get("markets", []):
+		market_id = market.get("id")
+		if market_id == 7052003:
+			target_market = market
+			break
+	
+	# Se não encontrou o market, retorna lista vazia
+	if target_market is None:
+		return []
+	
+	# Coleta todos os odd IDs deste market específico (de desktopOddIds e mobileOddIds)
+	allowed_odd_ids: set = set()
+	
+	# Extrai de desktopOddIds
+	for group in target_market.get("desktopOddIds", []):
+		if isinstance(group, list):
+			for oid in group:
+				if isinstance(oid, int):
+					allowed_odd_ids.add(oid)
+	
+	# Extrai de mobileOddIds
+	for group in target_market.get("mobileOddIds", []):
+		if isinstance(group, list):
+			for oid in group:
+				if isinstance(oid, int):
+					allowed_odd_ids.add(oid)
+	
 	odd_map = {odd.get("id"): odd for odd in event_details.get("odds", [])}
 	totals_by_line: Dict[str, Dict[str, Any]] = {}
 	
-	# Processa TODAS as odds de Totals diretamente, agrupando por linha individual
+	# Processa apenas odds de Totals que estão no market específico
 	for odd in event_details.get("odds", []):
 		ot = odd.get("typeId")
 		if ot not in (12, 13):
+			continue
+		
+		odd_id = odd.get("id")
+		# Verifica se a odd está na lista permitida (market específico)
+		if odd_id not in allowed_odd_ids:
+			# Se não está na lista, ignora
 			continue
 		
 		# PRIORIDADE 1: Extrai linha do campo sv (valor específico) - mais confiável
@@ -426,47 +461,6 @@ def extract_totals(event_details: Dict[str, Any]) -> List[Dict[str, Any]]:
 			rec["over"] = float(price)
 		elif is_under and rec["under"] is None:
 			rec["under"] = float(price)
-	
-	# Fallback: Se não encontrou nada, tenta através dos markets
-	if not totals_by_line:
-		for odd in event_details.get("odds", []):
-			ot = odd.get("typeId")
-			if ot not in (12, 13):
-				continue
-			
-			line = None
-			if odd.get("sv"):
-				line = str(odd.get("sv")).strip()
-			elif odd.get("sn"):
-				line = str(odd.get("sn")).strip()
-			elif odd.get("name"):
-				import re
-				name = str(odd.get("name", ""))
-				match = re.search(r'(\d+[.,]?\d*)', name)
-				if match:
-					line = match.group(1).replace(",", ".")
-			
-			if not line:
-				continue
-			
-			line = line.replace(",", ".").replace(" ", "").replace("+", "")
-			
-			if line not in totals_by_line:
-				totals_by_line[line] = {"line": line, "over": None, "under": None}
-			
-			rec = totals_by_line[line]
-			price = odd.get("price")
-			if price is None:
-				continue
-			
-			name = str(odd.get("name", "")).lower()
-			is_over = (ot == 12) or "mais de" in name or "over" in name
-			is_under = (ot == 13) or "menos de" in name or "under" in name
-			
-			if is_over and rec["over"] is None:
-				rec["over"] = float(price)
-			elif is_under and rec["under"] is None:
-				rec["under"] = float(price)
 	
 	# Return sorted by numeric line when possible
 	def parse_line(v: str) -> float:
