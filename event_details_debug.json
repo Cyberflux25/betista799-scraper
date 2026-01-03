@@ -1,0 +1,578 @@
+{
+  "id": 15113754,
+  "feedEventId": 17435612,
+  "name": "France (Profik) vs. Germany (Kolesya)",
+  "et": 0,
+  "sport": {
+    "typeId": 318,
+    "iconName": "soccer",
+    "hasLiveEvents": false,
+    "id": 66,
+    "name": "Futebol"
+  },
+  "champ": {
+    "hasLiveEvents": false,
+    "id": 39661,
+    "name": "Volta International 4x4 (2x3 mins)"
+  },
+  "category": {
+    "iso": "",
+    "hasLiveEvents": false,
+    "id": 1728,
+    "name": "E-battles"
+  },
+  "competitors": [
+    {
+      "id": 1045511,
+      "name": "France (Profik)"
+    },
+    {
+      "id": 370539,
+      "name": "Germany (Kolesya)"
+    }
+  ],
+  "marketGroups": [
+    {
+      "type": 0,
+      "marketIds": [
+        1334153815,
+        1334153839,
+        1334153827,
+        1334153818,
+        1334153823,
+        1334153824,
+        1334153826,
+        1334153828
+      ],
+      "isBundle": false,
+      "sortOrder": 0,
+      "id": 1,
+      "name": "Principal"
+    },
+    {
+      "type": 0,
+      "marketIds": [
+        1334153834,
+        1334153837
+      ],
+      "isBundle": false,
+      "sortOrder": 0,
+      "id": 1609,
+      "name": "Tempo"
+    }
+  ],
+  "childMarketGroups": [],
+  "markets": [
+    {
+      "shortName": "1x2",
+      "desktopOddIds": [
+        [
+          3300224484
+        ],
+        [
+          3300224485
+        ],
+        [
+          3300224486
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224484
+        ],
+        [
+          3300224485
+        ],
+        [
+          3300224486
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 1,
+      "isMB": false,
+      "sportMarketId": 72858,
+      "id": 1334153815,
+      "name": "1x2"
+    },
+    {
+      "shortName": "Total",
+      "desktopOddIds": [
+        [
+          3300224576
+        ],
+        [
+          3300224577
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224576
+        ],
+        [
+          3300224577
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 18,
+      "isMB": true,
+      "sportMarketId": 72862,
+      "sv": "2.5",
+      "id": 1334153839,
+      "name": "Total"
+    },
+    {
+      "shortName": "Primeiro gol",
+      "desktopOddIds": [
+        [
+          3300224510
+        ],
+        [
+          3300224511
+        ],
+        [
+          3300224512
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224510
+        ],
+        [
+          3300224511
+        ],
+        [
+          3300224512
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 8,
+      "isMB": true,
+      "sportMarketId": 72859,
+      "sv": "1",
+      "id": 1334153827,
+      "name": "Primeiro gol"
+    },
+    {
+      "shortName": "Handicap",
+      "desktopOddIds": [
+        [
+          3300224491
+        ],
+        [
+          3300224492
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224491
+        ],
+        [
+          3300224492
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 16,
+      "isMB": true,
+      "sportMarketId": 72861,
+      "sv": "+1.5",
+      "id": 1334153818,
+      "name": "Handicap"
+    },
+    {
+      "shortName": "Chance dupla",
+      "desktopOddIds": [
+        [
+          3300224503
+        ],
+        [
+          3300224501
+        ],
+        [
+          3300224502
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224503,
+          3300224501,
+          3300224502
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 10,
+      "isMB": false,
+      "sportMarketId": 72860,
+      "id": 1334153823,
+      "name": "Chance dupla"
+    },
+    {
+      "shortName": "France (Profik) total",
+      "desktopOddIds": [
+        [
+          3300224504
+        ],
+        [
+          3300224505
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224504
+        ],
+        [
+          3300224505
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 19,
+      "isMB": true,
+      "sportMarketId": 72863,
+      "sv": "1.5",
+      "id": 1334153824,
+      "name": "France (Profik) total"
+    },
+    {
+      "shortName": "Germany (Kolesya) total",
+      "desktopOddIds": [
+        [
+          3300224508
+        ],
+        [
+          3300224509
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224508
+        ],
+        [
+          3300224509
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 20,
+      "isMB": true,
+      "sportMarketId": 72864,
+      "sv": "1.5",
+      "id": 1334153826,
+      "name": "Germany (Kolesya) total"
+    },
+    {
+      "shortName": "Ímpar/Par",
+      "desktopOddIds": [
+        [
+          3300224514
+        ],
+        [
+          3300224513
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224514
+        ],
+        [
+          3300224513
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 26,
+      "isMB": false,
+      "sportMarketId": 72865,
+      "id": 1334153828,
+      "name": "Ímpar/Par"
+    },
+    {
+      "shortName": "1º tempo - 1x2",
+      "desktopOddIds": [
+        [
+          3300224564
+        ],
+        [
+          3300224565
+        ],
+        [
+          3300224566
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224564
+        ],
+        [
+          3300224565
+        ],
+        [
+          3300224566
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 60,
+      "isMB": false,
+      "sportMarketId": 72867,
+      "id": 1334153834,
+      "name": "1º tempo - 1x2"
+    },
+    {
+      "shortName": "1º tempo - total",
+      "desktopOddIds": [
+        [
+          3300224571
+        ],
+        [
+          3300224572
+        ]
+      ],
+      "mobileOddIds": [
+        [
+          3300224571
+        ],
+        [
+          3300224572
+        ]
+      ],
+      "isBB": false,
+      "so": 0,
+      "typeId": 68,
+      "isMB": true,
+      "sportMarketId": 72871,
+      "sv": "1.5",
+      "id": 1334153837,
+      "name": "1º tempo - total"
+    }
+  ],
+  "childMarkets": [],
+  "odds": [
+    {
+      "typeId": 1,
+      "price": 2.8572,
+      "isMB": false,
+      "oddStatus": 0,
+      "competitorId": 1045511,
+      "id": 3300224484,
+      "name": "France (Profik)"
+    },
+    {
+      "typeId": 2,
+      "price": 3.6,
+      "isMB": false,
+      "oddStatus": 0,
+      "id": 3300224485,
+      "name": "Empate"
+    },
+    {
+      "typeId": 3,
+      "price": 2.05,
+      "isMB": false,
+      "oddStatus": 0,
+      "competitorId": 370539,
+      "id": 3300224486,
+      "name": "Germany (Kolesya)"
+    },
+    {
+      "typeId": 12,
+      "price": 1.6,
+      "isMB": true,
+      "oddStatus": 0,
+      "sv": "2.5",
+      "id": 3300224576,
+      "name": "Mais de 2.5"
+    },
+    {
+      "typeId": 13,
+      "price": 2.1,
+      "isMB": true,
+      "oddStatus": 0,
+      "sv": "2.5",
+      "id": 3300224577,
+      "name": "Menos de 2.5"
+    },
+    {
+      "typeId": 1,
+      "price": 2.0834,
+      "isMB": false,
+      "oddStatus": 0,
+      "sv": "1",
+      "competitorId": 1045511,
+      "id": 3300224510,
+      "name": "France (Profik)"
+    },
+    {
+      "typeId": 7,
+      "price": 16.0,
+      "isMB": false,
+      "oddStatus": 0,
+      "sv": "1",
+      "id": 3300224511,
+      "name": "Nenhum"
+    },
+    {
+      "typeId": 3,
+      "price": 1.7334,
+      "isMB": false,
+      "oddStatus": 0,
+      "sv": "1",
+      "competitorId": 370539,
+      "id": 3300224512,
+      "name": "Germany (Kolesya)"
+    },
+    {
+      "typeId": 1714,
+      "price": 1.2223,
+      "isMB": false,
+      "oddStatus": 0,
+      "sv": "+1.5",
+      "competitorId": 1045511,
+      "id": 3300224491,
+      "name": "France (Profik) (+1.5)"
+    },
+    {
+      "typeId": 1715,
+      "price": 3.5,
+      "isMB": false,
+      "oddStatus": 0,
+      "sv": "+1.5",
+      "competitorId": 370539,
+      "id": 3300224492,
+      "name": "Germany (Kolesya) (-1.5)"
+    },
+    {
+      "typeId": 9,
+      "price": 1.5834,
+      "isMB": false,
+      "oddStatus": 0,
+      "competitorId": 1045511,
+      "id": 3300224503,
+      "name": "France (Profik) ou empate"
+    },
+    {
+      "typeId": 10,
+      "price": 1.2223,
+      "isMB": false,
+      "oddStatus": 0,
+      "id": 3300224501,
+      "name": "France (Profik) ou Germany (Kolesya)"
+    },
+    {
+      "typeId": 11,
+      "price": 1.3334,
+      "isMB": false,
+      "oddStatus": 0,
+      "competitorId": 370539,
+      "id": 3300224502,
+      "name": "Empate ou Germany (Kolesya)"
+    },
+    {
+      "typeId": 12,
+      "price": 2.3,
+      "isMB": true,
+      "oddStatus": 0,
+      "sv": "1.5",
+      "id": 3300224504,
+      "name": "Mais de 1.5"
+    },
+    {
+      "typeId": 13,
+      "price": 1.5,
+      "isMB": true,
+      "oddStatus": 0,
+      "sv": "1.5",
+      "id": 3300224505,
+      "name": "Menos de 1.5"
+    },
+    {
+      "typeId": 12,
+      "price": 1.85,
+      "isMB": true,
+      "oddStatus": 0,
+      "sv": "1.5",
+      "id": 3300224508,
+      "name": "Mais de 1.5"
+    },
+    {
+      "typeId": 13,
+      "price": 1.8,
+      "isMB": true,
+      "oddStatus": 0,
+      "sv": "1.5",
+      "id": 3300224509,
+      "name": "Menos de 1.5"
+    },
+    {
+      "typeId": 70,
+      "price": 1.8334,
+      "isMB": false,
+      "oddStatus": 0,
+      "id": 3300224514,
+      "name": "Ímpar"
+    },
+    {
+      "typeId": 72,
+      "price": 1.8334,
+      "isMB": false,
+      "oddStatus": 0,
+      "id": 3300224513,
+      "name": "Par"
+    },
+    {
+      "typeId": 1,
+      "price": 3.2,
+      "isMB": false,
+      "oddStatus": 0,
+      "competitorId": 1045511,
+      "id": 3300224564,
+      "name": "France (Profik)"
+    },
+    {
+      "typeId": 2,
+      "price": 2.4546,
+      "isMB": false,
+      "oddStatus": 0,
+      "id": 3300224565,
+      "name": "Empate"
+    },
+    {
+      "typeId": 3,
+      "price": 2.5,
+      "isMB": false,
+      "oddStatus": 0,
+      "competitorId": 370539,
+      "id": 3300224566,
+      "name": "Germany (Kolesya)"
+    },
+    {
+      "typeId": 12,
+      "price": 2.0,
+      "isMB": false,
+      "oddStatus": 0,
+      "sv": "1.5",
+      "id": 3300224571,
+      "name": "Mais de 1.5"
+    },
+    {
+      "typeId": 13,
+      "price": 1.6667,
+      "isMB": false,
+      "oddStatus": 0,
+      "sv": "1.5",
+      "id": 3300224572,
+      "name": "Menos de 1.5"
+    }
+  ],
+  "boosts": [],
+  "nonBoosts": [],
+  "isParlay": false,
+  "eventCode": 2563,
+  "rc": false,
+  "startDate": "2025-12-30T17:37:00Z",
+  "showAll": true
+}

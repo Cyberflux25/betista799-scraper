@@ -366,13 +366,12 @@ def extract_moneyline(event_details: Dict[str, Any], odd_map: Dict[int, Dict[str
 
 def extract_totals(event_details: Dict[str, Any]) -> List[Dict[str, Any]]:
 	# Odds typeId: 12 (Mais de / Over), 13 (Menos de / Under)
-	# FILTRO: Busca o market pelo ID 7052003 e extrai todas as odds desse market
+	# Market typeId 18 = Total (Over/Under goals)
 	
-	# Busca o market específico pelo ID 7052003
+	# Busca o market pelo typeId 18 (Total de Golos)
 	target_market = None
 	for market in event_details.get("markets", []):
-		market_id = market.get("id")
-		if market_id == 7052003:
+		if market.get("typeId") == 18:
 			target_market = market
 			break
 	
@@ -668,23 +667,23 @@ if __name__ == "__main__":
 	loop_count = 0
 	while True:
 		loop_count += 1
-		print(f"\n{'='*80}")
+	print(f"\n{'='*80}")
 		print(f"🔄 BETISTA799 SCRAPER - Execução #{loop_count}")
-		print(f"{'='*80}\n")
-		
-		try:
-			run(
-				headless=not args.no_headless,
-				limit=args.limit,
-				output_path=args.output,
-				template_path=args.template,
-				workers=args.workers,
-			)
+	print(f"{'='*80}\n")
+	
+	try:
+		run(
+			headless=not args.no_headless,
+			limit=args.limit,
+			output_path=args.output,
+			template_path=args.template,
+			workers=args.workers,
+		)
 			print(f"\n✅ Execução #{loop_count} concluída com sucesso!")
-		except KeyboardInterrupt:
-			print("\n\n⚠️  Interrompido pelo usuário. Encerrando...")
-			sys.exit(0)
-		except Exception as e:
+	except KeyboardInterrupt:
+		print("\n\n⚠️  Interrompido pelo usuário. Encerrando...")
+		sys.exit(0)
+	except Exception as e:
 			print(f"❌ Erro na execução #{loop_count}: {e}")
 			print("⏳ Aguardando 30 segundos antes de tentar novamente...")
 			time.sleep(30)
